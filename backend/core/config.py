@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     LEMONSQUEEZY_STORE_ID: str = ""
     LEMONSQUEEZY_WEBHOOK_SECRET: str = ""
     SENTRY_DSN: str = ""
+    GEMINI_API_KEY: str = ""
     THREATFADE_ZSCORE_THRESHOLD: float = 2.5
     class Config:
         env_file = ".env"
