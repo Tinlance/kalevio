@@ -3,12 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
 from api.routes import health, threats, incidents, compliance, reports, audit, billing
 
-app = FastAPI(title="KalevioAI", version="0.1.0",
+app = FastAPI(
+    title="KalevioAI",
     description="NIS2/DORA Compliance Copilot — Detect threats. File reports. Automatically.",
-    docs_url="/api/docs" if settings.APP_ENV != "production" else None, redoc_url=None)
+    version="0.1.0",
+    docs_url="/api/docs" if settings.APP_ENV != "production" else None,
+    redoc_url=None,
+)
 
-app.add_middleware(CORSMiddleware, allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(health.router,     prefix="/api/v1")
 app.include_router(threats.router,    prefix="/api/v1/threats")
