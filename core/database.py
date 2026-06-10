@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-from backend.core.config import settings
+from core.config import settings
 
 engine = create_async_engine(settings.DATABASE_URL, echo=False, pool_pre_ping=True)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -21,9 +21,13 @@ async def get_db():
 
 async def create_tables():
     """Auto-create all tables on startup. Safe to run repeatedly."""
-    from backend.models.organisation import Organisation
-    from backend.models.incident import Incident
-    from backend.models.report import ComplianceReport
-    from backend.models.audit import AuditLog
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        from models.organisation import Organisation
+        from models.incident import Incident
+        from models.report import ComplianceReport
+        from models.audit import AuditLog
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ DB tables created/verified")
+    except Exception as e:
+        print(f"⚠️ DB table creation failed: {e} — continuing without DB")
