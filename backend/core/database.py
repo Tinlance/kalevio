@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-from backend.core.config import settings
+from core.config import settings
 
 engine = create_async_engine(settings.DATABASE_URL, echo=False, pool_pre_ping=True)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -20,10 +20,38 @@ async def get_db():
             await session.close()
 
 async def create_tables():
-    """Auto-create all tables on startup. Safe to run repeatedly."""
-    from backend.models.organisation import Organisation
-    from backend.models.incident import Incident
-    from backend.models.report import ComplianceReport
-    from backend.models.audit import AuditLog
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    """Auto-create all tables and seed default org."""
+    try:
+        from models.organisation import Organisation, PlanTier
+        from models.incident import Incident
+        from models.report import ComplianceReport
+        from models.audit import AuditLog
+        import uuid
+        from sqlalchemy import select
+
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ DB tables created/verified")
+
+        # Seed default org for pre-auth MVP
+        default_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(Organisation).where(Organisation.id == default_id)
+            )
+            existing = result.scalar_one_or_none()
+            if not existing:
+                org = Organisation(
+                    id=default_id,
+                    name="Default Organisation",
+                    country_code="EE",
+                    plan_tier=PlanTier.FREE,
+                    is_active=True,
+                )
+                session.add(org)
+                await session.commit()
+                print("✅ Default org seeded")
+            else:
+                print("✅ Default org exists")
+    except Exception as e:
+        print(f"⚠️ DB setup failed: {e} — continuing")
