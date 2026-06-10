@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KalevioAI — NIS2 & DORA Compliance Copilot</title>
+<meta name="description" content="The only platform that detects cyber threats and auto-generates NIS2/DORA compliance reports. Used by European SMEs. Estonian OÜ. EU data residency.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:16px}
+:root{
+  --void:#010308;--deep:#030812;--card:#050e1c;--card2:#071220;
+  --border:#0a1828;--border2:#0f2038;
+  --blue:#1d6fff;--blue-dim:#1455cc;--blue-glow:rgba(29,111,255,0.15);
+  --frost:#a8d4ff;--frost-dim:rgba(168,212,255,0.12);
+  --alert:#ff2d4a;--alert-glow:rgba(255,45,74,0.12);
+  --safe:#00c97a;--safe-glow:rgba(0,201,122,0.1);
+  --warn:#f59e0b;--warn-glow:rgba(245,158,11,0.1);
+  --text:#b8d4f0;--dim:#3d5a7a;--ghost:#152035;
+  --bright:#e8f4ff;
+}
+body{background:var(--void);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;line-height:1.6}
+
+/* Aurora */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 90% 40% at 60% 0%,rgba(29,111,255,0.07) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 60% at 0% 80%,rgba(0,201,122,0.03) 0%,transparent 55%);}
+
+/* Grid */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(29,111,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(29,111,255,0.018) 1px,transparent 1px);
+  background-size:52px 52px;}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;
+  background:rgba(1,3,8,0.88);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:0 48px;}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo{font-family:'Instrument Serif',serif;font-size:22px;font-weight:400;color:var(--bright);letter-spacing:0.01em;}
+.nav-logo b{font-weight:400;color:var(--blue);}
+.nav-tag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;
+  background:rgba(29,111,255,0.1);border:1px solid rgba(29,111,255,0.25);color:var(--frost);letter-spacing:0.1em;text-transform:uppercase;}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{color:var(--dim);font-size:12px;text-decoration:none;letter-spacing:0.05em;transition:color 0.15s;}
+.nav-links a:hover{color:var(--frost);}
+.nav-cta{background:var(--blue)!important;color:#fff!important;padding:8px 20px;font-size:12px;font-weight:500;letter-spacing:0.04em;transition:all 0.15s!important;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.nav-cta:hover{background:#3d7fff!important;box-shadow:0 0 22px rgba(29,111,255,0.45)!important;}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;
+  padding:100px 48px 60px;gap:60px;position:relative;z-index:1;max-width:1280px;margin:0 auto;}
+
+.hero-left{}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:28px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--frost);background:rgba(168,212,255,0.06);border:1px solid rgba(168,212,255,0.18);padding:6px 14px;}
+.eyebrow-pulse{width:6px;height:6px;border-radius:50%;background:var(--safe);box-shadow:0 0 8px var(--safe);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.7)}}
+
+.hero-h1{font-family:'Instrument Serif',serif;font-size:clamp(40px,4.5vw,68px);
+  font-weight:400;line-height:1.05;letter-spacing:-0.02em;color:var(--bright);margin-bottom:10px;}
+.hero-h1 em{font-style:italic;color:var(--blue);}
+.hero-h1 .line2{display:block;color:var(--frost);}
+
+.hero-sub{font-size:17px;color:var(--dim);max-width:480px;margin:20px 0 36px;
+  font-weight:300;line-height:1.7;font-family:'Inter',sans-serif;}
+.hero-sub strong{color:var(--text);font-weight:500;}
+
+/* Deadline chip */
+.deadline-chip{display:inline-flex;align-items:center;gap:16px;margin-bottom:32px;
+  padding:14px 22px;background:rgba(255,45,74,0.06);border:1px solid rgba(255,45,74,0.22);
+  border-left:3px solid var(--alert);}
+.dc-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--alert);white-space:nowrap;}
+.dc-timer{display:flex;align-items:baseline;gap:3px;font-family:'Instrument Serif',serif;}
+.dc-num{font-size:28px;font-weight:400;color:var(--bright);line-height:1;}
+.dc-sep{font-size:18px;color:var(--ghost);margin:0 2px;}
+.dc-unit{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:0.1em;display:block;text-transform:uppercase;margin-top:1px;}
+
+/* Form */
+.hero-form{display:flex;max-width:460px;}
+.hero-input{flex:1;background:var(--card);border:1px solid var(--border2);border-right:none;
+  color:var(--bright);font-family:'JetBrains Mono',monospace;font-size:13px;padding:13px 18px;
+  outline:none;transition:border-color 0.15s;}
+.hero-input::placeholder{color:var(--dim);}
+.hero-input:focus{border-color:var(--blue);}
+.hero-btn{background:var(--blue);color:#fff;border:none;padding:13px 24px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.hero-btn:hover{background:#3d7fff;box-shadow:0 0 26px rgba(29,111,255,0.5);}
+.hero-hint{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:0.04em;}
+.hero-hint span{color:var(--safe);}
+
+/* Proof row */
+.proof-row{display:flex;align-items:center;gap:28px;margin-top:44px;padding-top:36px;border-top:1px solid var(--border);}
+.proof-item{text-align:center;}
+.proof-num{font-family:'Instrument Serif',serif;font-size:26px;color:var(--bright);display:block;line-height:1;}
+.proof-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-top:3px;}
+.proof-div{width:1px;height:36px;background:var(--border);}
+
+/* ─── TERMINAL ─── */
+.hero-right{position:relative;}
+.terminal{background:#020a14;border:1px solid var(--border2);overflow:hidden;
+  box-shadow:0 0 60px rgba(29,111,255,0.08);}
+.term-bar{background:#040f1e;border-bottom:1px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;gap:8px;}
+.term-dot{width:10px;height:10px;border-radius:50%;}
+.td1{background:#ff5f57;}.td2{background:#febc2e;}.td3{background:#28c840;}
+.term-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
+  letter-spacing:0.08em;margin-left:auto;margin-right:auto;}
+.term-body{padding:20px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;
+  min-height:420px;max-height:480px;overflow:hidden;position:relative;}
+.term-line{display:block;color:var(--text);}
+.term-line.cmd{color:var(--safe);}
+.term-line.key{color:var(--frost);}
+.term-line.val{color:var(--text);padding-left:16px;}
+.term-line.head{color:var(--blue);font-weight:600;}
+.term-line.dim{color:var(--dim);}
+.term-line.alert{color:var(--alert);}
+.term-line.warn{color:var(--warn);}
+.term-cursor{display:inline-block;width:8px;height:14px;background:var(--blue);
+  animation:blink 1.1s infinite;vertical-align:middle;margin-left:2px;}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.term-model-badge{display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+  background:rgba(29,111,255,0.1);border:1px solid rgba(29,111,255,0.25);
+  padding:4px 10px;font-size:10px;color:var(--frost);letter-spacing:0.06em;}
+
+/* ─── SECTION BASE ─── */
+section{position:relative;z-index:1;}
+.section-inner{max-width:1100px;margin:0 auto;padding:90px 48px;}
+.section-eye{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;
+  letter-spacing:0.22em;text-transform:uppercase;color:var(--ghost);margin-bottom:14px;}
+.section-h2{font-family:'Instrument Serif',serif;font-size:clamp(30px,3.5vw,52px);
+  font-weight:400;line-height:1.1;color:var(--bright);letter-spacing:-0.02em;margin-bottom:16px;}
+.section-h2 em{font-style:italic;color:var(--frost);}
+
+/* ─── STATS BAND ─── */
+.stats-band{background:rgba(255,45,74,0.04);border-top:1px solid rgba(255,45,74,0.15);
+  border-bottom:1px solid rgba(255,45,74,0.15);}
+.stats-inner{max-width:1100px;margin:0 auto;padding:48px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,45,74,0.1);}
+.stat-item{background:rgba(1,3,8,0.8);padding:40px 36px;}
+.stat-num{font-family:'Instrument Serif',serif;font-size:56px;font-weight:400;
+  line-height:1;letter-spacing:-0.03em;color:var(--bright);display:block;margin-bottom:10px;}
+.stat-num.red{color:var(--alert);}
+.stat-num.amber{color:var(--warn);}
+.stat-label{font-size:14px;color:var(--dim);font-weight:300;line-height:1.5;font-family:'Inter',sans-serif;}
+.stat-label strong{color:var(--text);font-weight:500;}
+
+/* ─── HOW ─── */
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);margin-top:52px;}
+.how-step{background:var(--card);padding:36px 28px;position:relative;overflow:hidden;}
+.how-step::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.hs1::before{background:linear-gradient(90deg,var(--alert),transparent);}
+.hs2::before{background:linear-gradient(90deg,var(--warn),transparent);}
+.hs3::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.hs4::before{background:linear-gradient(90deg,var(--safe),transparent);}
+.how-n{font-family:'Instrument Serif',serif;font-size:52px;font-weight:400;
+  color:var(--ghost);line-height:1;margin-bottom:18px;letter-spacing:-0.03em;}
+.how-icon{font-size:22px;margin-bottom:12px;display:block;}
+.how-title{font-family:'Instrument Serif',serif;font-size:19px;font-weight:400;
+  color:var(--bright);margin-bottom:10px;line-height:1.2;}
+.how-body{font-size:13px;color:var(--dim);line-height:1.7;font-family:'Inter',sans-serif;}
+.how-tag{display:inline-block;margin-top:16px;font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:600;padding:3px 8px;letter-spacing:0.1em;text-transform:uppercase;}
+.ht1{background:rgba(255,45,74,0.08);color:var(--alert);border:1px solid rgba(255,45,74,0.25);}
+.ht2{background:rgba(245,158,11,0.08);color:var(--warn);border:1px solid rgba(245,158,11,0.25);}
+.ht3{background:var(--blue-glow);color:var(--frost);border:1px solid rgba(29,111,255,0.3);}
+.ht4{background:var(--safe-glow);color:var(--safe);border:1px solid rgba(0,201,122,0.25);}
+
+/* ─── LIVE REPORT ─── */
+.live-report-wrap{margin-top:52px;border:1px solid var(--border2);overflow:hidden;}
+.lr-head{background:var(--card2);border-bottom:1px solid var(--border);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;}
+.lr-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--frost);letter-spacing:0.06em;}
+.lr-badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 10px;
+  background:var(--blue-glow);border:1px solid rgba(29,111,255,0.3);color:var(--frost);
+  letter-spacing:0.1em;text-transform:uppercase;}
+.lr-body{padding:28px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;
+  color:var(--text);background:var(--deep);}
+.lr-section{color:var(--blue);font-weight:600;margin-top:16px;display:block;}
+.lr-field{color:var(--frost);}
+.lr-value{color:var(--text);}
+.lr-ok{color:var(--safe);}
+.lr-note{color:var(--dim);font-size:11px;margin-top:16px;display:block;
+  border-top:1px solid var(--border);padding-top:14px;}
+
+/* ─── COMPARE ─── */
+.compare-table{width:100%;border-collapse:collapse;margin-top:52px;border:1px solid var(--border);}
+.compare-table th{padding:14px 20px;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.th-feat{color:var(--dim);background:var(--card);width:32%;text-align:left;}
+.th-other{color:var(--dim);background:var(--card);width:17%;text-align:center;}
+.th-us{color:var(--frost);background:rgba(29,111,255,0.06);width:17%;text-align:center;
+  border-top:2px solid var(--blue);}
+.compare-table td{padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px;}
+.compare-table tr:last-child td{border-bottom:none;}
+.compare-table tr:hover td{background:rgba(29,111,255,0.02);}
+.td-feat{color:var(--text);background:var(--card);font-family:'Inter',sans-serif;}
+.td-other{text-align:center;color:var(--dim);background:var(--card);
+  font-family:'JetBrains Mono',monospace;font-size:12px;}
+.td-us{text-align:center;background:rgba(29,111,255,0.04);
+  font-family:'JetBrains Mono',monospace;font-size:12px;}
+.ck{color:var(--safe);font-size:15px;}.cx{color:var(--alert);font-size:15px;}.cp{color:var(--warn);}
+
+/* ─── PRICING ─── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);margin-top:52px;}
+.price-card{background:var(--card);padding:40px 32px;position:relative;overflow:hidden;}
+.price-card.featured{background:rgba(29,111,255,0.06);
+  border-left:1px solid rgba(29,111,255,0.3);border-right:1px solid rgba(29,111,255,0.3);}
+.price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--frost));}
+.price-pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;
+  font-weight:700;padding:3px 10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:20px;}
+.pp0{background:var(--ghost);color:var(--dim);}
+.pp1{background:var(--blue-glow);color:var(--frost);border:1px solid rgba(29,111,255,0.3);}
+.pp2{background:var(--warn-glow);color:var(--warn);border:1px solid rgba(245,158,11,0.25);}
+.price-name{font-family:'Instrument Serif',serif;font-size:22px;color:var(--bright);margin-bottom:8px;}
+.price-amt{font-family:'Instrument Serif',serif;font-size:50px;color:var(--bright);
+  line-height:1;letter-spacing:-0.03em;margin-bottom:4px;}
+.price-amt sup{font-size:22px;vertical-align:top;margin-top:10px;color:var(--dim);}
+.price-period{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
+  margin-bottom:28px;letter-spacing:0.06em;}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+.price-features li{font-size:13px;color:var(--dim);display:flex;align-items:flex-start;
+  gap:10px;font-family:'Inter',sans-serif;}
+.price-features li::before{content:'→';color:var(--blue);font-family:'JetBrains Mono',monospace;
+  font-size:11px;flex-shrink:0;margin-top:2px;}
+.price-features li.on{color:var(--text);}
+.price-btn{width:100%;padding:13px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.15s;}
+.pb0{background:transparent;border:1px solid var(--border2);color:var(--dim);}
+.pb0:hover{border-color:var(--blue);color:var(--frost);}
+.pb1{background:var(--blue);color:#fff;}
+.pb1:hover{background:#3d7fff;box-shadow:0 0 24px rgba(29,111,255,0.45);}
+.pb2{background:transparent;border:1px solid rgba(245,158,11,0.3);color:var(--warn);}
+.pb2:hover{background:var(--warn-glow);}
+
+/* ─── TRUST ─── */
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);margin-top:52px;}
+.trust-card{background:var(--card);padding:32px;}
+.trust-icon{font-size:26px;margin-bottom:14px;display:block;}
+.trust-title{font-family:'Instrument Serif',serif;font-size:18px;color:var(--bright);
+  margin-bottom:10px;font-weight:400;}
+.trust-body{font-size:13px;color:var(--dim);line-height:1.7;font-family:'Inter',sans-serif;}
+.trust-body strong{color:var(--frost);}
+
+/* ─── FINAL CTA ─── */
+.final-cta{text-align:center;padding:120px 48px;position:relative;overflow:hidden;}
+.final-cta::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(29,111,255,0.06) 0%,transparent 70%);}
+.final-cta-inner{position:relative;z-index:1;max-width:680px;margin:0 auto;}
+.final-h2{font-family:'Instrument Serif',serif;font-size:clamp(34px,5vw,62px);
+  font-weight:400;color:var(--bright);line-height:1.05;letter-spacing:-0.02em;margin-bottom:20px;}
+.final-h2 em{font-style:italic;color:var(--alert);}
+.final-sub{font-size:16px;color:var(--dim);max-width:460px;margin:0 auto 40px;line-height:1.7;font-weight:300;}
+.final-form{display:flex;max-width:460px;margin:0 auto;}
+
+/* ─── FOOTER ─── */
+footer{background:rgba(1,3,8,0.95);border-top:1px solid var(--border);
+  padding:36px 48px;display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:1;}
+.footer-brand{font-family:'Instrument Serif',serif;font-size:18px;color:var(--bright);}
+.footer-brand b{color:var(--blue);font-weight:400;}
+.footer-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:0.05em;}
+.footer-links{display:flex;gap:24px;font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.06em;text-transform:uppercase;}
+.footer-links a{color:var(--dim);text-decoration:none;transition:color 0.15s;}
+.footer-links a:hover{color:var(--frost);}
+.footer-right{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--dim);letter-spacing:0.06em;}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--safe);color:var(--void);
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:13px 22px;
+  z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s;letter-spacing:0.04em;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ─── REVEAL ─── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  nav{padding:0 20px;}.nav-links{display:none;}
+  .hero{grid-template-columns:1fr;padding:90px 20px 40px;gap:40px;}
+  .hero-right{display:none;}
+  .stats-inner,.how-steps,.pricing-grid,.trust-grid{grid-template-columns:1fr;}
+  .section-inner{padding:60px 20px;}
+  .proof-row{flex-wrap:wrap;gap:16px;}
+  footer{flex-direction:column;gap:20px;text-align:center;padding:28px 20px;}
+  .final-cta{padding:80px 20px;}
+  .final-form,.hero-form{flex-direction:column;}
+  .hero-input,.hero-input{border-right:1px solid var(--border2);}
+  .compare-table{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+      <path d="M16 2L4 9V23L16 30L28 23V9L16 2Z" stroke="#1d6fff" stroke-width="1.2" fill="rgba(29,111,255,0.06)"/>
+      <path d="M16 7L9 11.5V19L16 23.5L23 19V11.5L16 7Z" stroke="#a8d4ff" stroke-width="0.8" fill="none"/>
+      <circle cx="16" cy="15.5" r="3" fill="#1d6fff" opacity="0.9"/>
+      <circle cx="16" cy="15.5" r="1.2" fill="#e8f4ff"/>
+    </svg>
+    <span class="nav-logo">Kalevio<b>AI</b></span>
+  </a>
+  <nav class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#compare">Compare</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#waitlist" class="nav-cta">Get Early Access</a>
+  </nav>
+</nav>
+
+<!-- HERO -->
+<div style="position:relative;z-index:1;max-width:1280px;margin:0 auto;">
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-pulse"></span>
+      NIS2 Enforcement · October 2026
+    </div>
+
+    <h1 class="hero-h1">
+      Detect the threat.<br>
+      <em>File the report.</em>
+      <span class="line2">Automatically.</span>
+    </h1>
+
+    <p class="hero-sub">
+      KalevioAI is the <strong>only compliance platform</strong> that combines live C2 threat detection with AI-generated NIS2/DORA reports — in a single automated flow. <strong>Live now.</strong>
+    </p>
+
+    <div class="deadline-chip">
+      <div class="dc-label">⚠ NIS2 Deadline</div>
+      <div class="dc-timer">
+        <div><span class="dc-num" id="cd-d">158</span><span class="dc-unit">days</span></div>
+        <span class="dc-sep">:</span>
+        <div><span class="dc-num" id="cd-h">00</span><span class="dc-unit">hrs</span></div>
+        <span class="dc-sep">:</span>
+        <div><span class="dc-num" id="cd-m">00</span><span class="dc-unit">min</span></div>
+        <span class="dc-sep">:</span>
+        <div><span class="dc-num" id="cd-s">00</span><span class="dc-unit">sec</span></div>
+      </div>
+    </div>
+
+    <form class="hero-form" id="hero-form" onsubmit="handleSubmit(event)">
+      <input class="hero-input" type="email" placeholder="ciso@yourcompany.eu" required>
+      <button class="hero-btn" type="submit">Get Early Access →</button>
+    </form>
+    <p class="hero-hint"><span>✓</span> Free tier &nbsp;·&nbsp; <span>✓</span> EU data residency &nbsp;·&nbsp; <span>✓</span> No card needed</p>
+
+    <div class="proof-row">
+      <div class="proof-item">
+        <span class="proof-num">180K+</span>
+        <span class="proof-label">EU Orgs in scope</span>
+      </div>
+      <div class="proof-div"></div>
+      <div class="proof-item">
+        <span class="proof-num">84%</span>
+        <span class="proof-label">Not compliant</span>
+      </div>
+      <div class="proof-div"></div>
+      <div class="proof-item">
+        <span class="proof-num">€10M</span>
+        <span class="proof-label">Max NIS2 fine</span>
+      </div>
+      <div class="proof-div"></div>
+      <div class="proof-item">
+        <span class="proof-num">24hrs</span>
+        <span class="proof-label">To file warning</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="hero-right">
+    <div class="terminal">
+      <div class="term-bar">
+        <span class="term-dot td1"></span>
+        <span class="term-dot td2"></span>
+        <span class="term-dot td3"></span>
+        <span class="term-title">kalevioai — NIS2 report generator</span>
+      </div>
+      <div class="term-body" id="terminal-body">
+        <span class="term-line cmd">$ curl -X POST https://kalevio.tinlance.com/api/v1/reports/generate</span>
+        <span class="term-line dim">  generating report via Claude Sonnet 4.5...</span>
+        <span class="term-line dim" style="margin-bottom:12px">  ✓ ThreatFade detection: Z-score 14.76 (CRITICAL)</span>
+        <span class="term-line head">── NIS2 ARTICLE 23 EARLY WARNING ──</span>
+        <span class="term-line"><span class="term-line key">CSIRT Authority:</span> <span class="term-line val">RIA (Estonia) · cert@cert.ee</span></span>
+        <span class="term-line"><span class="term-line key">Legal Basis:</span> <span class="term-line val">Directive (EU) 2022/2555, Art. 23</span></span>
+        <span class="term-line"><span class="term-line key">Compliance Status:</span> <span style="color:#00c97a">✓ WITHIN DEADLINE</span></span>
+        <span class="term-line" style="margin-top:10px"><span class="term-line key">1. Incident Classification:</span></span>
+        <span class="term-line val">   Significant incident — NIS2 Art.23(3)</span>
+        <span class="term-line val">   threshold met. Merlin QUIC C2 beacon</span>
+        <span class="term-line val">   detected. Z-score: 14.76 (490K packets)</span>
+        <span class="term-line" style="margin-top:8px"><span class="term-line key">2. Cross-Border Assessment:</span></span>
+        <span class="term-line val">   Primary: Republic of Estonia (EE)</span>
+        <span class="term-line val">   Risk: Baltic Sea fibre routes to LV, FI</span>
+        <span class="term-line" style="margin-top:8px"><span class="term-line key">3. Regulatory Timeline:</span></span>
+        <span class="term-line val">   Early warning: <span style="color:#f59e0b">Art.23(1)(a) — 24hrs ✓</span></span>
+        <span class="term-line val">   Notification:  Art.23(1)(b) — 72hrs</span>
+        <span class="term-line val">   Final report:  Art.23(1)(c) — 30 days</span>
+        <div class="term-model-badge">
+          <span style="color:#00c97a">●</span> claude-sonnet-4-5 · live
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- STATS BAND -->
+<div class="stats-band reveal">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num red">84%</span>
+      <div class="stat-label">of organisations in NIS2 scope <strong>are not yet compliant</strong> — with enforcement starting October 2026</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num amber">24hrs</span>
+      <div class="stat-label">to file an early warning after a significant incident. <strong>Most SMEs take days just to detect it.</strong></div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" style="color:var(--frost)">€10M</span>
+      <div class="stat-label">maximum NIS2 fine — or 2% of global turnover. <strong>Board members are personally liable.</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="reveal">
+  <div class="section-inner">
+    <div class="section-eye">How it works</div>
+    <h2 class="section-h2">From threat to <em>regulatory report</em> in minutes.</h2>
+    <div class="how-steps">
+      <div class="how-step hs1">
+        <div class="how-n">01</div>
+        <span class="how-icon">🔍</span>
+        <div class="how-title">Detect</div>
+        <div class="how-body">ThreatFade analyses network traffic in real-time using entropy-based Z-score detection. Validated against Merlin QUIC (Z=14.76), Cobalt Strike (Z=7.01), IcedID (Z=3.89). Zero false positives.</div>
+        <span class="how-tag ht1">ThreatFade v0.2</span>
+      </div>
+      <div class="how-step hs2">
+        <div class="how-n">02</div>
+        <span class="how-icon">⚡</span>
+        <div class="how-title">Classify</div>
+        <div class="how-body">AI agents evaluate NIS2 Article 23(3) significance thresholds automatically. Determines severity, cross-border impact, and which CSIRT authority to notify.</div>
+        <span class="how-tag ht2">NIS2 Art. 23</span>
+      </div>
+      <div class="how-step hs3">
+        <div class="how-n">03</div>
+        <span class="how-icon">📄</span>
+        <div class="how-title">Report</div>
+        <div class="how-body">Claude Sonnet 4.5 generates a full NIS2-compliant incident report. 24-hour early warning, 72-hour notification, 30-day final report — all from the same incident data.</div>
+        <span class="how-tag ht3">Claude Sonnet 4.5</span>
+      </div>
+      <div class="how-step hs4">
+        <div class="how-n">04</div>
+        <span class="how-icon">🛡</span>
+        <div class="how-title">Notify</div>
+        <div class="how-body">One-click CSIRT submission across all 27 EU member states. CEO and board notified instantly. SHA-256 hash-chained audit trail created automatically.</div>
+        <span class="how-tag ht4">27 EU CSIRTs</span>
+      </div>
+    </div>
+
+    <!-- Live report sample -->
+    <div class="live-report-wrap">
+      <div class="lr-head">
+        <span class="lr-title">Live output — actual Claude Sonnet 4.5 report from kalevio.tinlance.com</span>
+        <span class="lr-badge">● Real API · Not a mockup</span>
+      </div>
+      <div class="lr-body">
+        <span class="lr-section"># OFFICIAL NIS2 INCIDENT REPORT — EARLY WARNING NOTIFICATION</span>
+        <span><span class="lr-field">Classification:</span> <span class="lr-value">REGULATORY — NIS2 Article 23(1)</span></span>
+        <span><span class="lr-field">CSIRT Authority:</span> <span class="lr-value">RIA (Riigi Infosüsteemi Amet) — Estonia</span></span>
+        <span><span class="lr-field">Legal Basis:</span> <span class="lr-value">Directive (EU) 2022/2555 (NIS2) — Article 23</span></span>
+        <span><span class="lr-field">Compliance Status:</span> <span class="lr-ok">✓ WITHIN REGULATORY DEADLINE</span></span>
+        <span class="lr-section" style="margin-top:14px">2. SIGNIFICANCE ASSESSMENT (NIS2 Art. 23(3))</span>
+        <span class="lr-value">The incident meets NIS2 Article 23(3) significance thresholds:</span>
+        <span class="lr-value">→ Considerable operational disruption risk to essential services</span>
+        <span class="lr-value">→ Initial indicators: Merlin QUIC C2 beacon (Z-score 14.76, 490K packets)</span>
+        <span class="lr-value">→ MITRE ATT&CK: T1071.001 · T1027 · T1573.001</span>
+        <span class="lr-section" style="margin-top:14px">4. CROSS-BORDER IMPACT ASSESSMENT</span>
+        <span class="lr-value">Primary affected jurisdiction: Republic of Estonia (EE)</span>
+        <span class="lr-value">Cross-border risk: Potential propagation via Baltic Sea fibre to Latvia, Finland</span>
+        <span class="lr-value">EU-CSIRT Network notification: Under assessment per Art. 23(8)</span>
+        <span class="lr-note">↑ This is real output from kalevio.tinlance.com — generated by Claude Sonnet 4.5 in &lt;8 seconds. No templates. No manual work.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare" class="reveal">
+  <div class="section-inner">
+    <div class="section-eye">The difference</div>
+    <h2 class="section-h2">Every competitor sells <em>half a solution.</em></h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="th-feat">Feature</th>
+          <th class="th-other">Venvera</th>
+          <th class="th-other">Orbiq</th>
+          <th class="th-other">Heimdal</th>
+          <th class="th-other">Drata</th>
+          <th class="th-us">KalevioAI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-feat">NIS2/DORA native</td>
+          <td class="td-other"><span class="ck">✓</span></td>
+          <td class="td-other"><span class="ck">✓</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">Live C2 threat detection</td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">AI-generated NIS2 reports</td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">Auto CSIRT notification</td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">EU data residency</td>
+          <td class="td-other"><span class="ck">✓</span></td>
+          <td class="td-other"><span class="ck">✓</span></td>
+          <td class="td-other"><span class="ck">✓</span></td>
+          <td class="td-other"><span class="cx">✕</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">Hash-chained audit trail</td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-other"><span class="cp">~</span></td>
+          <td class="td-us"><span class="ck">✓</span></td>
+        </tr>
+        <tr>
+          <td class="td-feat">Starting price</td>
+          <td class="td-other" style="color:var(--warn)">€299/mo</td>
+          <td class="td-other" style="color:var(--dim)">N/A</td>
+          <td class="td-other" style="color:var(--dim)">N/A</td>
+          <td class="td-other" style="color:var(--warn)">$15K/yr</td>
+          <td class="td-us" style="color:var(--safe)">€49/mo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="reveal">
+  <div class="section-inner">
+    <div class="section-eye">Pricing</div>
+    <h2 class="section-h2">SME pricing for <em>enterprise compliance.</em></h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <span class="price-pill pp0">Free</span>
+        <div class="price-name">Starter</div>
+        <div class="price-amt"><sup>€</sup>0</div>
+        <div class="price-period">Forever free · No card needed</div>
+        <ul class="price-features">
+          <li class="on">1 user</li>
+          <li class="on">3 threat scans / month</li>
+          <li class="on">1 NIS2 report draft</li>
+          <li class="on">Scope checker wizard</li>
+          <li>Unlimited scans</li>
+          <li>Auto CSIRT notify</li>
+        </ul>
+        <button class="price-btn pb0" onclick="scrollToWaitlist()">Join Waitlist →</button>
+      </div>
+      <div class="price-card featured">
+        <span class="price-pill pp1">Most Popular</span>
+        <div class="price-name">Professional</div>
+        <div class="price-amt"><sup>€</sup>49</div>
+        <div class="price-period">Per organisation · Monthly</div>
+        <ul class="price-features">
+          <li class="on">5 users</li>
+          <li class="on">Unlimited threat scans</li>
+          <li class="on">Unlimited NIS2/DORA reports</li>
+          <li class="on">Auto CSIRT notification</li>
+          <li class="on">Hash-chained audit trail</li>
+          <li class="on">Board-level dashboard</li>
+          <li class="on">Evidence vault</li>
+        </ul>
+        <button class="price-btn pb1" onclick="scrollToWaitlist()">Get Early Access →</button>
+      </div>
+      <div class="price-card">
+        <span class="price-pill pp2">Enterprise</span>
+        <div class="price-name">Guardian</div>
+        <div class="price-amt"><sup>€</sup>199</div>
+        <div class="price-period">Per organisation · Monthly</div>
+        <ul class="price-features">
+          <li class="on">Unlimited users</li>
+          <li class="on">Everything in Professional</li>
+          <li class="on">MS365 + GWorkspace + AWS</li>
+          <li class="on">Supply chain risk module</li>
+          <li class="on">NIS2 + DORA + GDPR mapping</li>
+          <li class="on">Public Trust Center page</li>
+          <li class="on">Priority support</li>
+        </ul>
+        <button class="price-btn pb2" onclick="scrollToWaitlist()">Join Waitlist →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="reveal">
+  <div class="section-inner">
+    <div class="section-eye">Why trust us</div>
+    <h2 class="section-h2">Built by security engineers. <em>For European SMEs.</em></h2>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <span class="trust-icon">🔬</span>
+        <div class="trust-title">Production-Validated Detection</div>
+        <div class="trust-body">ThreatFade validated against real C2 malware. <strong>Merlin QUIC Z=14.76.</strong> 490K+ packets. 0% false-positive rate. 22 passing unit tests. Not a demo — a deployed engine.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🇪🇪</span>
+        <div class="trust-title">Estonian OÜ · EU Data Residency</div>
+        <div class="trust-body">Registered in Estonia — the EU's most digitally advanced nation. <strong>Your data never leaves the EU.</strong> No US CLOUD Act exposure. GDPR-native by architecture.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">⛓</span>
+        <div class="trust-title">Tamper-Proof Audit Trail</div>
+        <div class="trust-body">Every event is written to a <strong>SHA-256 hash-chained immutable log.</strong> NIS2 5-year retention built in. Regulators can verify every timestamp.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🤖</span>
+        <div class="trust-title">Four-Layer AI Resilience</div>
+        <div class="trust-body">Claude Sonnet 4.5 primary. <strong>Grok-3 fallback. Gemini 2.0 emergency.</strong> Offline template always available. Reports generate even in a total cloud outage.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🧬</span>
+        <div class="trust-title">Open-Source Credibility</div>
+        <div class="trust-body">PRs merged in <strong>Nuclei (24K⭐), TruffleHog (15K⭐), Semgrep (11K⭐)</strong>, Gitleaks (10K⭐). Our detectors run in global production scans today.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🌍</span>
+        <div class="trust-title">Built for the World</div>
+        <div class="trust-body">NIS2/DORA for EU now. <strong>UK Cyber Resilience Bill, Australia Essential Eight</strong> modules shipping 2027. One platform, every regulation, every market.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta reveal" id="waitlist">
+  <div class="final-cta-inner">
+    <h2 class="final-h2">The deadline is<br><em>158 days away.</em></h2>
+    <p class="final-sub">84% of organisations in NIS2 scope are not ready. Join the waitlist and protect your business — and your board — before enforcement begins.</p>
+    <form class="final-form" onsubmit="handleSubmit(event)">
+      <input class="hero-input" type="email" placeholder="ciso@yourcompany.eu" required>
+      <button class="hero-btn" type="submit">Secure Early Access →</button>
+    </form>
+    <p class="hero-hint" style="margin-top:14px;text-align:center"><span>✓</span> Free tier forever &nbsp;·&nbsp; <span>✓</span> Cancel anytime &nbsp;·&nbsp; <span>✓</span> GDPR compliant</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">Kalevio<b>AI</b></div>
+    <div class="footer-sub">NIS2 · DORA · EU Compliance Copilot · api: kalevio.tinlance.com</div>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="https://github.com/Tinlance/kalevio" target="_blank">GitHub</a>
+    <a href="mailto:hello@kalevioai.com">Contact</a>
+  </div>
+  <div class="footer-right">🇪🇪 Tinlance OÜ · Tallinn, Estonia · © 2026</div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ You are on the list. We will be in touch.</div>
+
+<script>
+// Countdown to Oct 17 2026
+function tick(){
+  const d=new Date('2026-10-17T00:00:00Z')-new Date();
+  if(d<=0)return;
+  document.getElementById('cd-d').textContent=String(Math.floor(d/86400000)).padStart(3,'0');
+  document.getElementById('cd-h').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');
+  document.getElementById('cd-m').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
+  document.getElementById('cd-s').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');
+}
+tick();setInterval(tick,1000);
+
+// Waitlist
+function handleSubmit(e){
+  e.preventDefault();
+  const email=e.target.querySelector('input[type=email]').value;
+  console.log('Waitlist:',email);
+  showToast();e.target.reset();
+}
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+function scrollToWaitlist(){
+  document.getElementById('waitlist').scrollIntoView({behavior:'smooth'});
+}
+
+// Reveal on scroll
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
