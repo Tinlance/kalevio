@@ -29,4 +29,6 @@ app.include_router(billing.router,    prefix="/api/v1/billing")
 
 @app.on_event("startup")
 async def startup():
-    print("✅ KalevioAI started — ThreatFade online")
+    from core.database import create_tables
+    await create_tables()
+    print("✅ KalevioAI started — ThreatFade online — DB tables ready")

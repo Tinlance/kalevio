@@ -18,3 +18,12 @@ async def get_db():
             raise
         finally:
             await session.close()
+
+async def create_tables():
+    """Auto-create all tables on startup. Safe to run repeatedly."""
+    from backend.models.organisation import Organisation
+    from backend.models.incident import Incident
+    from backend.models.report import ComplianceReport
+    from backend.models.audit import AuditLog
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
