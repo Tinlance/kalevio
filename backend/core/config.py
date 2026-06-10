@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     ANTHROPIC_API_KEY: str = ""
     GROK_API_KEY: str = ""
-    LLM_TIMEOUT_SECONDS: int = 10
+    LLM_TIMEOUT_SECONDS: int = 30
     LLM_PRIMARY: str = "claude-sonnet-4-5"
     LLM_FALLBACK: str = "grok-3"
     CLERK_SECRET_KEY: str = ""

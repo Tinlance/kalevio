@@ -72,7 +72,7 @@ class LLMGateway:
             content = await asyncio.wait_for(
                 self._gemini_complete(prompt, max_tokens), timeout=self.timeout)
             logger.info("LLM: Gemini Flash emergency fallback")
-            return content, "gemini-1.5-flash"
+            return content, "gemini-2.0-flash"
         except Exception as e:
             logger.warning(f"Gemini failed: {type(e).__name__} — using template")
 
@@ -109,7 +109,7 @@ class LLMGateway:
     async def _gemini_complete(self, prompt, max_tokens):
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GEMINI_API_KEY}",
                 json={"contents": [{"parts": [{"text": prompt}]}],
                       "generationConfig": {"maxOutputTokens": max_tokens}},
                 timeout=30.0)
