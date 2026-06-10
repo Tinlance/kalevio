@@ -51,8 +51,7 @@ class LLMGateway:
                        max_tokens: int = 2048, template_data: Optional[dict] = None) -> tuple:
         # Layer 1 — Claude
         try:
-            content = await asyncio.wait_for(
-                self._claude_complete(prompt, system, max_tokens), timeout=self.timeout)
+            content = await self._claude_complete(prompt, system, max_tokens)
             logger.info("LLM: Claude Sonnet 4.5")
             return content, "claude-sonnet-4-5"
         except Exception as e:
