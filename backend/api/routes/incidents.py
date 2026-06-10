@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime, timezone, timedelta
-from backend.core.database import get_db
-from backend.models.incident import Incident, IncidentSeverity, IncidentStatus
+from core.database import get_db
+from models.incident import Incident, IncidentSeverity, IncidentStatus
 from pydantic import BaseModel
 from typing import Optional, List
 import uuid
@@ -16,6 +16,7 @@ class IncidentCreate(BaseModel):
     mitre_ttps: Optional[List[str]] = []
     source_ip: Optional[str] = None
     affected_systems: Optional[List[str]] = []
+    alert_email: Optional[str] = None
     raw_data: Optional[dict] = {}
 
 def classify_severity(z_score: float) -> IncidentSeverity:
@@ -56,11 +57,12 @@ def incident_to_out(inc: Incident) -> dict:
 
 @router.post("/", status_code=201)
 async def create_incident(payload: IncidentCreate, db: AsyncSession = Depends(get_db)):
-    """Create incident — auto-calculates NIS2 deadlines and reportability."""
+    """Create incident — auto-calculates NIS2 deadlines, sends email alert if reportable."""
     now = datetime.now(timezone.utc)
     severity = classify_severity(payload.z_score)
     nis2 = is_nis2_reportable(severity)
     dora = is_dora_reportable(severity, payload.threat_type)
+
     inc = Incident(
         id=uuid.uuid4(),
         org_id=uuid.UUID("00000000-0000-0000-0000-000000000001"),
@@ -83,8 +85,26 @@ async def create_incident(payload: IncidentCreate, db: AsyncSession = Depends(ge
     db.add(inc)
     await db.commit()
     await db.refresh(inc)
+
     result = incident_to_out(inc)
     result["message"] = f"Incident created. {'NIS2 Article 23 early warning due in 24h.' if nis2 else 'Below NIS2 reporting threshold.'}"
+    result["email_alert"] = False
+
+    # Send email alert for NIS2-reportable incidents
+    if nis2 and payload.alert_email:
+        from core.mailer import send_nis2_incident_alert
+        sent = await send_nis2_incident_alert(
+            to=payload.alert_email,
+            reference_id=inc.reference_id,
+            threat_type=inc.threat_type,
+            severity=severity.value,
+            z_score=inc.z_score,
+            early_warning_due=inc.early_warning_due.strftime("%Y-%m-%d %H:%M UTC"),
+            notification_due=inc.notification_due.strftime("%Y-%m-%d %H:%M UTC"),
+            final_report_due=inc.final_report_due.strftime("%Y-%m-%d %H:%M UTC"),
+        )
+        result["email_alert"] = sent
+
     return result
 
 @router.get("/")
